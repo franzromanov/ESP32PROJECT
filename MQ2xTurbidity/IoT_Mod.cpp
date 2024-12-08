@@ -23,23 +23,8 @@ void NET_START(const char ssid[64],const char password[128]){
 
 
     }
-    
   //end
-
-  //connect_to_gsheet
-
-
-
-
   
-  //end
-
-  //connect_to_telegram
-
-
-
-  //end 
-
 }
 
 void SEND_TO_GSHEET(uint8_t MQ2Value_,float TurbidityValue_){
