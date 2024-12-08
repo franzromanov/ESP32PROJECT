@@ -1,3 +1,9 @@
+/*
+ * Abnormal_condition>>TurbidityAbove_buffer | Gas detected | user_command
+ * 
+ */
+
+
 #include "IoT_Mod.h"
 #include "menu.h"
 #include "sense.h"
@@ -17,6 +23,19 @@ void loop(){
   currentClock=millis();
 
 
+
+  //Abnormal_condition
+
+  while(detected_gas|turbidty_danger|user_command==1){
+  
+    //subProcess:sendToTelegram
+    Serial.println("SeNdInG To TeLeGrAm...");//change to oled
+    SEND_TO_TELEGRAM(smokeState(12),turbidityReading(13));
+   
+    //reset_millis
+    startClock = millis(); // Reset timer for another 2 hours (optional) 
+  }
+
   //NORMAL_CONDITION>>>
   if (currentClock - startClock >= NormalDuration) {
     
@@ -27,7 +46,10 @@ void loop(){
     //subProcess:sendToTelegram
     Serial.println("SeNdInG To TeLeGrAm...");//change to oled
     SEND_TO_TELEGRAM(smokeState(12),turbidityReading(13));
+
+    //reset_millis
     startClock = millis(); // Reset timer for another 2 hours (optional)
+    
   }
 
      
