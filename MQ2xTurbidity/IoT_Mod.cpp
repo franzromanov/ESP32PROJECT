@@ -61,10 +61,14 @@ void SEND_TO_GSHEET(uint8_t MQ2Value_,float TurbidityValue_){
   
 void SEND_TO_TELEGRAM(uint8_t MQ2Value_,float TurbidityValue_){
   
-  String telegram_api = "https://api.telegram.org/bot" + String(botToken) +
-                      "/sendMessage?chat_id=" + String(chatID) + 
-                      "&text=" + "MQ2Value:" + String(MQ2Value_) + 
-                      "%0ATurbidity:" + String(TurbidityValue_);
+  String botToken = "7608792038:AAE1eaK3oernASWf1GTAFbWYD3Pk80ulPnc"; // Bot token
+  String chatID = "2031693341"; // Chat ID
+  
+  String telegram_api = "https://api.telegram.org/bot" + botToken +
+                        "/sendMessage?chat_id=" + chatID +
+                        "&text=MQ2Value:" + String(MQ2Value_) +
+                        "%0ATurbidity:" + String(TurbidityValue_);
+
 
   http_.begin(telegram_api);
 
