@@ -82,7 +82,7 @@ void MEASUREMENT_DISPLAY(float turbidity_val, uint8_t gas_state){
   display.print(turbidity_val);
   display.print("Gas_State: ");
   display.print(gas_state);  
-  greet="halt";
+  greet_="halt";
   display.getTextBounds(greet_, 0, 0, &dump_x, &dump_y, &text_w, &text_h);
   x_ = (128 - text_w) ; // allign right
   y_ = (64 - text_h);  // allign right
