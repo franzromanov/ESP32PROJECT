@@ -77,7 +77,7 @@ void oledSet(uint8_t btn_state_any){
 
 void MEASUREMENT_DISPLAY(float turbidity_val, uint8_t gas_state){
   display.clearDisplay();
-  display.setCursor(0,0)
+  display.setCursor(0,0);
   display.println("Turbidity_Value:");
   display.print(turbidity_val);
   display.print("Gas_State: ");
