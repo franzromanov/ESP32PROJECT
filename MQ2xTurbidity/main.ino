@@ -3,11 +3,11 @@
  * 
  */
 
-
+#include "library_all.h"
 #include "IoT_Mod.h"
 #include "menu.h"
 #include "sense.h"
-
+uint8_t detected_gas,turbidty_danger,user_command;
 unsigned long startClock,currentClock;
 const unsigned NormalDuration=7200000;
 

@@ -1,6 +1,4 @@
-#include <Arduino.h>
-#include <stdint.h>
-#include <math.h>
+#include "library_all.h"
 
 //TurbiditySensor
 float turbidityReading(uint8_t port_tb);
