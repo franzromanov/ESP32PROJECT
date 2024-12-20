@@ -91,5 +91,7 @@ void MEASUREMENT_DISPLAY(float turbidity_val, uint8_t gas_state){
   display.print(greet_); 
   display.setCursor(0,y_);
   display.print("Send");
+  display.display();
+  delay(2000);
   display.clearDisplay();
   }
