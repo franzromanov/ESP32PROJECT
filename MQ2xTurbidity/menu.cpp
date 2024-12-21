@@ -37,6 +37,7 @@ String greet_ = "Welcome User!";
 int16_t dump_x, dump_y; // Use int16_t instead of int
 int16_t x_ = 0, y_ = 0; // Coordinates must be int16_t
 uint16_t text_w = 0, text_h = 0; //
+
 void oledSet(){
   // Initialize I2C
   Wire.begin(I2C_SDA, I2C_SCL);
@@ -68,6 +69,7 @@ void oledSet(){
 
 }
 void oled_greet(){
+  display.clearDisplay();
   display.setCursor(0,0);
   display.print("Start_Measurement\n\nPress_Any_Button!\n");
   display.display();
