@@ -1,0 +1,271 @@
+/*
+ * Abnormal_condition>>TurbidityAbove_buffer | Gas detected | user_command
+ * 
+ */
+
+#include <WiFi.h>
+#include "Arduino.h"
+#include <HTTPClient.h>
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+#include <stdint.h>
+#include <math.h>
+
+const unsigned char PROGMEM bitmap []=
+{
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 
+  0xff, 0xf0, 0x00, 0x00, 0x00, 0x00, 0x01, 0xff, 0xfc, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0xfe, 
+  0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x7f, 0xff, 0x00, 0x00, 
+  0x00, 0x00, 0x00, 0x3f, 0xff, 0x80, 0x00, 0x00, 0x00, 0x00, 0x3f, 0xff, 0xc0, 0x00, 0x00, 0x00, 
+  0x00, 0x1f, 0xff, 0xe0, 0x00, 0x00, 0x00, 0x00, 0x1f, 0xff, 0xe0, 0x00, 0x00, 0x00, 0x00, 0x0f, 
+  0xff, 0xf0, 0x00, 0x00, 0x00, 0x00, 0x07, 0xff, 0xf8, 0x00, 0x00, 0x00, 0x00, 0x07, 0xff, 0xf8, 
+  0x00, 0x00, 0x00, 0x00, 0x01, 0xff, 0xfc, 0x00, 0x00, 0x00, 0x00, 0x00, 0x38, 0xc0, 0x00, 0x00, 
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x3f, 0xff, 0xc1, 0xff, 0xfc, 0x00, 0x00, 0x7f, 0xff, 0x83, 0xff, 
+  0xf8, 0x00, 0x00, 0xff, 0xff, 0x07, 0xff, 0xf8, 0x00, 0x00, 0xff, 0xfe, 0x0f, 0xff, 0xf0, 0x00, 
+  0x01, 0xff, 0xfe, 0x0f, 0xff, 0xf0, 0x00, 0x03, 0xff, 0xfc, 0x1f, 0xff, 0xe0, 0x00, 0x03, 0xff, 
+  0xf8, 0x3f, 0xff, 0xc0, 0x00, 0x07, 0xff, 0xf8, 0x3f, 0xff, 0xc0, 0x00, 0x0f, 0xff, 0xf0, 0x7f, 
+  0xff, 0x80, 0x00, 0x0f, 0xff, 0xe0, 0xff, 0xff, 0x00, 0x00, 0x1f, 0xff, 0xe0, 0xff, 0xff, 0x00, 
+  0x00, 0x3f, 0xff, 0xc1, 0xff, 0xfe, 0x00, 0x00, 0x3f, 0xff, 0xc1, 0xff, 0xf8, 0x00, 0x00, 0x7f, 
+  0xff, 0x80, 0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0x00, 
+  0x00, 0x00, 0x00, 0x01, 0xff, 0xfe, 0x00, 0x00, 0x00, 0x00, 0x03, 0xff, 0xfc, 0x00, 0x00, 0x00, 
+  0x00, 0x03, 0xff, 0xfc, 0x00, 0x00, 0x00, 0x00, 0x07, 0xff, 0xf8, 0x00, 0x00, 0x00, 0x00, 0x07, 
+  0xff, 0xf0, 0x00, 0x00, 0x00, 0x00, 0x0f, 0xff, 0xe0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+};
+// Define OLED display width and height
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 64
+
+// Create an SSD1306 display object
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
+
+// I2C pins for ESP32
+#define I2C_SDA 21
+#define I2C_SCL 22
+String greet_ = "Welcome User!";
+int16_t dump_x, dump_y; // Use int16_t instead of int
+int16_t x_ = 0, y_ = 0; // Coordinates must be int16_t
+uint16_t text_w = 0, text_h = 0; //
+HTTPClient http_;
+
+
+uint8_t detected_gas,turbidty_danger,user_command;
+unsigned long startClock,currentClock;
+const unsigned NormalDuration=500;
+uint8_t btn1=14,btn2=26,btn3=27,ack=0;
+
+void setup() {
+
+  Serial.begin(115200);
+  pinMode(btn1, INPUT_PULLUP);
+  pinMode(btn2, INPUT_PULLUP);
+  pinMode(btn3, INPUT_PULLUP);
+  pinMode(19,OUTPUT);
+  oledSet();
+
+  NET_START("syahdan", "12345678");
+}
+  
+void loop(){
+  Serial.println(digitalRead(btn1));
+  Serial.println(digitalRead(btn2));
+  Serial.println(digitalRead(btn3));
+
+  while(1){
+    if(!(digitalRead(btn1)&digitalRead(btn2)&digitalRead(btn3))==0){
+    oled_greet();
+    delay(200);
+    }else break;
+    
+  }
+  startClock=millis();  
+  
+  while(digitalRead(btn1)==1){ //exit
+    delay(50);//debounce
+    currentClock=millis();
+    float tbdt_bag=200;//turbidityReading(13);
+    uint8_t gas_state=1;//smokeState(12); 
+
+    MEASUREMENT_DISPLAY(tbdt_bag,gas_state);
+    if(currentClock-startClock>=NormalDuration){
+      //sendToGsheet&Telegram
+      startClock=millis();
+    }else if((((gas_state==1)|(tbdt_bag>=500))&(!(ack)))==1){
+      while(1){
+        display.clearDisplay();
+        display.setCursor(0,0);
+        display.print("-!WARNING!-\nHazard Detected\nAlarm_State_ON\nPress_Middle_Button_To_Stop");
+        display.display();
+        alarm_on(1,19);
+        delay(50);
+        if(!(digitalRead(btn2))==1){
+          alarm_on(0,19);
+          ack=1;
+          startClock=millis();
+          break;
+        }
+        //sendToGsheet&tele
+        SEND_TO_GSHEET(gas_state,tbdt_bag);
+        SEND_TO_TELEGRAM(gas_state,tbdt_bag);
+        delay(500);
+      }
+    }else if(!(digitalRead(btn3))==1){
+        delay(50);//debounce
+        //sendToGsheet&tele
+        SEND_TO_GSHEET(gas_state,tbdt_bag);
+        SEND_TO_TELEGRAM(gas_state,tbdt_bag);
+        startClock=millis();    
+    }
+    
+    }
+
+
+  }
+
+     
+
+void NET_START(const char ssid[64],const char password[128]){
+  //connect_to_wifi 
+  Serial.begin(115200);
+  delay(10);
+
+  Serial.println();
+  Serial.print("[WiFi] Connecting to ");
+  Serial.println(ssid);
+
+  WiFi.begin(ssid, password);
+
+  while (true) {
+
+    if(WiFi.status()==WL_CONNECTED){
+        Serial.println("connected");
+        break;
+        }
+
+
+    }
+  //end
+  
+}
+
+void SEND_TO_GSHEET(uint8_t MQ2Value_,float TurbidityValue_){
+
+
+  const char *sheet_url="https://script.google.com/macros/s/AKfycbxbMdlL1fzg2AwWfNaaE5qxMWCNtGiW3Q7MnGDgHHCrkHS2wLc3YsGIzm_mRNKnBsji/exec";
+  String json_data_= "{\"MQ2\": "+ String(MQ2Value_) + ", \"Turbidity\": "+String(TurbidityValue_)+"}";
+  http_.begin(sheet_url);
+  http_.addHeader("Content-Type","application/json");
+  //error-handling
+  if(http_.POST(json_data_)>0){
+    String response_=http_.getString();
+    Serial.println("Server:" + response_);
+    }else Serial.println("Server: Not Responding!");
+      
+  http_.end();
+  
+  }
+  
+void SEND_TO_TELEGRAM(uint8_t MQ2Value_,float TurbidityValue_){
+  
+  String botToken = "7608792038:AAE1eaK3oernASWf1GTAFbWYD3Pk80ulPnc"; // Bot token
+  String chatID = "2031693341"; // Chat ID
+  
+  String telegram_api = "https://api.telegram.org/bot" + botToken +
+                        "/sendMessage?chat_id=" + chatID +
+                        "&text=MQ2Value:" + String(MQ2Value_) +
+                        "%0ATurbidity:" + String(TurbidityValue_);
+
+
+  http_.begin(telegram_api);
+
+  if(http_.GET()){
+    String responseAPI_ = http_.getString();
+    Serial.println("Telegram:" + responseAPI_);   
+    }else Serial.println("Server: Not Responding!");
+    
+  http_.end();
+  
+  }
+  
+void alarm_on(uint8_t state,uint8_t buzz_port){
+  if(state==1)digitalWrite(buzz_port,state);
+  else digitalWrite(buzz_port,state);
+}
+
+
+void oledSet(){
+  // Initialize I2C
+  Wire.begin(I2C_SDA, I2C_SCL);
+
+  // Initialize the SSD1306 display
+  if (!display.begin(SSD1306_PAGEADDR, 0x3C)) {
+    Serial.println(F("SSD1306 allocation failed"));
+    for (;;);
+  }
+
+  // Clear the display buffer
+  display.clearDisplay();
+
+  // Display a startup message
+  display.setTextSize(1); // Set text size to 1
+  display.setTextColor(SSD1306_WHITE); // Set text color
+  display.drawBitmap((128-56)/2,((64-48)/2),bitmap,56,47,SSD1306_WHITE);
+  display.display();  
+  delay(2000);
+  display.clearDisplay();
+  display.getTextBounds(greet_, 0, 0, &dump_x, &dump_y, &text_w, &text_h); // Correct types
+  x_ = (128 - text_w) / 2; // Center horizontally
+  y_ = (64 - text_h) / 2;  // Center vertically
+  display.setCursor(x_, y_);
+  display.println(greet_);
+  display.display();
+  delay(2000); // Wait 2 seconds
+  display.clearDisplay();
+
+}
+void oled_greet(){
+  display.clearDisplay();
+  display.setCursor(0,0);
+  display.print("Start_Measurement\n\nPress_Any_Button!\n");
+  display.display();
+  display.clearDisplay();
+}
+
+void MEASUREMENT_DISPLAY(float turbidity_val, uint8_t gas_state){
+  display.clearDisplay();
+  display.getTextBounds(greet_, 0, 0, &dump_x, &dump_y, &text_w, &text_h);
+  x_ = (128 - text_w) ; // allign right
+  y_ = (64 - text_h);  // allign right
+  display.setCursor(0,text_h);
+  display.println("---------------");
+  display.println("Turbidity:");
+  display.println(turbidity_val);
+  display.println("Gas_State: ");
+  display.println(gas_state); 
+  display.print("---------------");
+  greet_="halt";
+
+  display.setCursor(0,0);
+  display.print(greet_); 
+  display.setCursor(0,y_);
+  display.print("Send");
+  display.display();
+  delay(2000);
+  display.clearDisplay();
+  }
+
+float turbidityReading(uint8_t port_tb){
+  int adc_val=analogRead(port_tb);
+  float voltage=(adc_val/4095)*3.3;
+  float calc_tb=((-2572.2)*pow(voltage,2))+(8700.5*voltage)-4352.9;
+  return calc_tb;
+  }
+
+uint8_t smokeState(uint8_t port_mq2){
+  uint8_t state=digitalRead(port_mq2);
+  return state;
+  }
