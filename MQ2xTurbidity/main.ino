@@ -10,47 +10,77 @@
 uint8_t detected_gas,turbidty_danger,user_command;
 unsigned long startClock,currentClock;
 const unsigned NormalDuration=7200000;
+uint8_t btn1=14,btn2=26,btn3=27;
 
 void setup() {
 
   NET_START("IN UTERO", "coppernotgood666");
-  startClock=millis();
-  Serial.println("Clock Up"); //change to oled
+  Serial.begin(115200);
+  pinMode(btn1, INPUT_PULLUP);
+  pinMode(btn2, INPUT_PULLUP);
+  pinMode(btn3, INPUT_PULLUP);
+  pinMode(19,OUTPUT);
+  oledSet();
 }
-
   
 void loop(){
-  currentClock=millis();
+  Serial.println(digitalRead(btn1));
+  Serial.println(digitalRead(btn2));
+  Serial.println(digitalRead(btn3));
 
-
-
-  //Abnormal_condition
-
-  while(detected_gas|turbidty_danger|user_command==1){
-  
-    //subProcess:sendToTelegram
-    Serial.println("SeNdInG To TeLeGrAm...");//change to oled
-    SEND_TO_TELEGRAM(smokeState(12),turbidityReading(13));
-   
-    //reset_millis
-    startClock = millis(); // Reset timer for another 2 hours (optional) 
+  while(1){
+    if(!(digitalRead(btn1)&digitalRead(btn2)&digitalRead(btn3))==0){
+    oled_greet();
+    delay(200);
+    }else break;
+    
   }
+  startClock=millis();  
+  
+  while(digitalRead(btn1)==1){ //exit
+    delay(50);//debounce
+    currentClock=millis();
+    float tbdt_bag=turbidityReading(13);
+    uint8_t gas_state=smokeState(12); 
 
-  //NORMAL_CONDITION>>>
-  if (currentClock - startClock >= NormalDuration) {
+    MEASUREMENT_DISPLAY(tbdt_bag,gas_state);
+    if(currentClock-startClock>=NormalDuration){
+      //sendToGsheet&Telegram
+      startClock=millis();
+    }else if(((gas_state==1)|(tbdt_bag>=500))==1){
+      while(1){
+        display.clearDisplay();
+        display.setCursor(0,0);
+        display.print("-!WARNING!-\nHazard Detected\Alarm_State_ON\nPress_Middle_Button_To_Stop");
+        display.display();
+        alarm_on(1,19);
+        delay(50);
+        if(!(digitalRead(btn2))==1){
+          alarm_on(0,19);
+          startClock=millis();
+          break;
+        }
+        //sendToGsheet&tele
+        SEND_TO_GSHEET(gas_state,tbdt_bag);
+        SEND_TO_TELEGRAM(gas_state,tbdt_bag);
+        delay(500);
+    }else if(!(digitalRead(btn3))==1){
+        delay(50);//debounce
+        //sendToGsheet&tele
+        SEND_TO_GSHEET(gas_state,tbdt_bag);
+        SEND_TO_TELEGRAM(gas_state,tbdt_bag);
+        startClock=millis();    
+    }
     
-    //subProcess:sendToSheet
-    Serial.println("SeNdInG To GsHeEt...");//change to oled
-    SEND_TO_GSHEET(smokeState(12),turbidityReading(13));
+    }
 
-    //subProcess:sendToTelegram
-    Serial.println("SeNdInG To TeLeGrAm...");//change to oled
-    SEND_TO_TELEGRAM(smokeState(12),turbidityReading(13));
 
-    //reset_millis
-    startClock = millis(); // Reset timer for another 2 hours (optional)
-    
   }
 
      
+}
+
+void alarm_on(uint8_t state,uint8_t buzz_port){
+  if(state==1)digitalWrite(buzz_port,state);
+  else digitalWrite(buzz_port,state);
 }
