@@ -37,7 +37,6 @@ String greet_ = "Welcome User!";
 int16_t dump_x, dump_y; // Use int16_t instead of int
 int16_t x_ = 0, y_ = 0; // Coordinates must be int16_t
 uint16_t text_w = 0, text_h = 0; //
-
 void oledSet(){
   // Initialize I2C
   Wire.begin(I2C_SDA, I2C_SCL);
@@ -72,22 +71,24 @@ void oled_greet(){
   display.setCursor(0,0);
   display.print("Start_Measurement\n\nPress_Any_Button!\n");
   display.display();
-  delay(2000); // Wait 2 seconds
   display.clearDisplay();
 }
 
 void MEASUREMENT_DISPLAY(float turbidity_val, uint8_t gas_state){
   display.clearDisplay();
-  display.setCursor(0,0);
-  display.print("Turbidity_Value:");
-  display.println(turbidity_val);
-  display.print("Gas_State: ");
-  display.print(gas_state);  
-  greet_="halt";
   display.getTextBounds(greet_, 0, 0, &dump_x, &dump_y, &text_w, &text_h);
   x_ = (128 - text_w) ; // allign right
   y_ = (64 - text_h);  // allign right
-  display.setCursor(x_,y_);
+  display.setCursor(0,text_h);
+  display.println("---------------");
+  display.println("Turbidity:");
+  display.println(turbidity_val);
+  display.println("Gas_State: ");
+  display.println(gas_state); 
+  display.print("---------------");
+  greet_="halt";
+
+  display.setCursor(0,0);
   display.print(greet_); 
   display.setCursor(0,y_);
   display.print("Send");
