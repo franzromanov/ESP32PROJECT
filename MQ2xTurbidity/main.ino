@@ -10,7 +10,7 @@
 uint8_t detected_gas,turbidty_danger,user_command;
 unsigned long startClock,currentClock;
 const unsigned NormalDuration=7200000;
-uint8_t btn1=14,btn2=26,btn3=27;
+uint8_t btn1=14,btn2=26,btn3=27,ack=0;
 
 void setup() {
 
@@ -47,7 +47,7 @@ void loop(){
     if(currentClock-startClock>=NormalDuration){
       //sendToGsheet&Telegram
       startClock=millis();
-    }else if(((gas_state==1)|(tbdt_bag>=500))==1){
+    }else if((((gas_state==1)|(tbdt_bag>=500))&(!(ack)))==1){
       while(1){
         display.clearDisplay();
         display.setCursor(0,0);
@@ -57,6 +57,7 @@ void loop(){
         delay(50);
         if(!(digitalRead(btn2))==1){
           alarm_on(0,19);
+          ack=1;
           startClock=millis();
           break;
         }
