@@ -64,6 +64,7 @@ void loop(){
         SEND_TO_GSHEET(gas_state,tbdt_bag);
         SEND_TO_TELEGRAM(gas_state,tbdt_bag);
         delay(500);
+      }
     }else if(!(digitalRead(btn3))==1){
         delay(50);//debounce
         //sendToGsheet&tele
@@ -78,7 +79,7 @@ void loop(){
   }
 
      
-}
+
 
 void alarm_on(uint8_t state,uint8_t buzz_port){
   if(state==1)digitalWrite(buzz_port,state);
