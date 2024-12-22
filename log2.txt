@@ -67,7 +67,7 @@ void setup() {
   pinMode(19,OUTPUT);
   oledSet();
 
-  NET_START("syahdan", "12345678");
+  NET_START("IN UTERO", "coppernotgood666");
 }
   
 void loop(){
